@@ -119,7 +119,7 @@ INSTALL		?= install
 SHELL	 	:= ${shell which bash}
 
 OBJ 		:= obj-${shell $(CC) -dumpmachine}
-LIBDIR		:= ${shell pwd}/${SIMAVR}/${OBJ}
+LIBDIR		:= ${SIMAVR}/${OBJ}
 LDFLAGS 	+= -L${LIBDIR} -lsimavr -lm
 
 # Are libelf and/or libdwarf installed?
