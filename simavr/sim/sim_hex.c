@@ -84,7 +84,7 @@ read_ihex_chunks(
 		fw_chunk_t ** chunks_p )
 {
 	fw_chunk_t *chunk = *chunks_p;
-	fw_chunk_t *backlink_p = chunk;
+	fw_chunk_t **backlink_p = chunks_p; // should store the pointer where chunk address stored
 	int         len, allocation = 0;
 	uint8_t     chk = 0;
 	uint8_t     bline[272];
@@ -151,16 +151,17 @@ read_ihex_chunks(
 		}
 		if (!chunk || (chunk->size && addr != chunk->addr + chunk->size)) {
 			/* New chunk. */
-			backlink_p = chunk;
 			allocation = ALLOCATION - sizeof *chunk + 1;
 			chunk = (fw_chunk_t *)malloc(ALLOCATION);
 			*chunks_p = chunk;
+			backlink_p = chunks_p; // should store the pointer where chunk address stored
 			chunks_p = &chunk->next;
 			chunk->type = UNKNOWN;
 			chunk->addr = addr;
 			chunk->fill_size = chunk->size = bline[0];
 			chunk->next = NULL;
 			memcpy(chunk->data, bline + 4, bline[0]);
+
 			continue;
 		}
 
@@ -173,11 +174,7 @@ read_ihex_chunks(
 			chunk = realloc(chunk, allocation + (sizeof *chunk - 1));
 
 			/* Update the pointer in the previous list element or root */
-			if ( backlink_p ) {
-				backlink_p->next = chunk;
-			} else {
-				*chunks_p = chunk;
-			}
+			if ( backlink_p ) *backlink_p = chunk;
 
 			/* Refresh the pointer to the future chunk */
 			chunks_p = &chunk->next;
